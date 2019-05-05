@@ -5,8 +5,16 @@ authors = ["dumitru-stama <dumitru.stama@gmail.com>"]
 edition = "2018"
 build = "build.rs"
 
+[features]
+system-alloc = []
+
 [dependencies]
 libc = "0.2"
+sha2 = { version = "0.8", default-features = false }
+basenc = { version = "0.1", default-features = false }
+
+[dependencies.mbox]
+path = "libs/mbox"
 
 [build-dependencies]
 cc = "1.0"
@@ -16,7 +24,15 @@ crate-type = ["cdylib"]
 
 [profile.dev]
 panic = "abort"
+lto = true
+codegen-units = 1
+incremental = false
+opt-level = "z"
 
 [profile.release]
 panic = "abort"
+lto = true
+codegen-units = 1
+incremental = false
+opt-level = "z"
 
