@@ -8,16 +8,17 @@ extern crate basenc;
 mod layer;
 
 use layer::{calculate_something, print_under_120};
-use mbox::MBox;
+use mbox::{MBox, MArray};
 use sha2::{Sha256, Digest};
 
 #[no_mangle]
 pub extern fn respond_promptly(v: libc::c_int) -> libc::c_int {
     let mut hasher = Sha256::new();
     let data = b"Testing string";
+    let mdata = MArray::from_slice(&data[..]);
     let mut buff: [u8;128] = [0;128];
     let mut hash_bytes: [u8;32] = [0;32];
-    hasher.input(data);
+    hasher.input(mdata);
     let hash = hasher.result();
     let mut i = 0;
     for c in hash {
