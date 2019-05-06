@@ -35,6 +35,7 @@ pub extern fn functie(argc: i32, argv: *const *const u8) -> i32 {
 extern "C" {
     fn malloc(s: usize) -> *mut u8;
     fn free(ptr: *mut u8);
+    fn memset(ptr: *mut u8, c: usize, n: usize);
 }
 
 struct CAlloc;
@@ -44,6 +45,13 @@ unsafe impl GlobalAlloc for CAlloc {
     }
     unsafe fn dealloc(&self, ptr: *mut u8, layout: Layout) {
         free(ptr);
+    }
+    unsafe fn alloc_zeroed(&self, layout: Layout) -> *mut u8 {
+        let buf = malloc(layout.size());
+        if !buf.is_null() {
+            memset(buf, 0, layout.size());
+        }
+        buf
     }
 }
 
