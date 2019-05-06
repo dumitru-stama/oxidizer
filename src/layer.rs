@@ -1,6 +1,5 @@
 extern crate libc;
 
-
 extern "C" {
     fn stub_function(input: libc::c_int) -> libc::c_int;
     fn print_function(input: *const[i8;128]);

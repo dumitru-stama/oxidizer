@@ -9,6 +9,8 @@ build = "build.rs"
 libc = "0.2"
 sha2 = { version = "0.8", default-features = false }
 
+[features]
+
 [build-dependencies]
 cc = "1.0"
 
