@@ -1,43 +1,78 @@
+#![feature(alloc_error_handler, box_syntax, lang_items)]
 #![no_std]
+#[macro_use]
 
+extern crate alloc;
 extern crate libc;
-extern crate mbox;
-extern crate sha2;
-extern crate basenc;
-
 mod layer;
 
-use layer::{calculate_something, print_under_120, get_file_contents};
-use mbox::{MBox, MArray};
-use sha2::{Sha256, Digest};
+use core::panic::PanicInfo;
+use core::alloc::*;
+use layer::calculate_something;
 
+//----------------------------------------------------------------------
+// One export example
 #[no_mangle]
-pub extern fn respond_promptly(v: libc::c_int) -> libc::c_int {
-    let mut hasher = Sha256::new();
-    let data = b"Testing string";
-    let mdata = MArray::from_slice(&data[..]);
-
-
-    let fc = get_file_contents(b"testfile.bin");
-    
-    
-    let mut buff: [u8;128] = [0;128];
-    let mut hash_bytes: [u8;32] = [0;32];
-    //hasher.input(mdata);
-    hasher.input(fc);
-    let hash = hasher.result();
+pub extern fn functie(argc: i32, argv: *const *const u8) -> i32 {
+    let mut b = box [1i32;100000];
+    let v = vec![0u8;100000];
+    let mut res: i32 = 0;
     let mut i = 0;
-    for c in hash {
-        hash_bytes[i] = c as u8;
+    for a in v.iter() {
+        res += *a as i32 + b[i];
+        b[i] += 1;
         i += 1;
     }
-    
-    basenc::encode(&hash_bytes, basenc::UpperHex, & mut buff[..]);
-    buff[64] = 0;
-    
-    print_under_120(&buff[..], 64);
+    calculate_something(res+b[1])
+}
 
-    let five = MBox::new(5);
-    calculate_something(v) * calculate_something(*five)
+//----------------------------------------------------------------------
+//----------------------------------------------------------------------
+// Here is the magic stuff
+// ---------------------------------------------------------------------
+//----------------------------------------------------------------------
+
+extern "C" {
+    fn malloc(s: usize) -> *mut u8;
+    fn free(ptr: *mut u8);
+}
+
+struct CAlloc;
+unsafe impl GlobalAlloc for CAlloc {
+    unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
+        malloc(layout.size())
+    }
+    unsafe fn dealloc(&self, ptr: *mut u8, layout: Layout) {
+        free(ptr);
+    }
+}
+
+#[global_allocator]
+static ALLOCATOR: CAlloc = CAlloc;
+
+#[alloc_error_handler]
+fn alloc(_: Layout) -> ! { 
+    loop {} 
+}
+
+#[panic_handler]
+extern "C" fn panic(_: &PanicInfo) -> ! { 
+    loop {} 
+}
+
+#[no_mangle] 
+pub extern fn rust_eh_register_frames () {
+}
+
+#[no_mangle] 
+pub extern fn rust_eh_unregister_frames () {
+}
+
+#[lang = "eh_personality"] 
+extern "C" fn eh_personality() {
+}
+
+#[lang = "eh_unwind_resume"] 
+extern fn rust_eh_unwind_resume() {
 }
 

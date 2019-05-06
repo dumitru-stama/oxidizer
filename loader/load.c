@@ -12,7 +12,7 @@ int main() {
 		fprintf(stderr, "%s\n", dlerror());
 		exit(1);
 	}
-	respond_promptly = dlsym(solib, "respond_promptly");
+	respond_promptly = dlsym(solib, "functie");
 	if ((error = dlerror()) != NULL) {
 		fprintf(stderr, "%s\n", error);
 		exit(2);
